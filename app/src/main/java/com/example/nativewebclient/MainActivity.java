@@ -1,6 +1,7 @@
 package com.example.nativewebclient;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import com.example.nativewebclient.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ValueCallback<Uri[]> uploadMessage;
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 1;
 
 
     @Override
@@ -64,6 +67,13 @@ public class MainActivity extends AppCompatActivity {
 
                 return true;
             }
+
+            @Override
+            public void onPermissionRequest(PermissionRequest request) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    request.grant(request.getResources());
+                }
+            }
         });
 
         // Load "https://google.com"
@@ -87,6 +97,21 @@ public class MainActivity extends AppCompatActivity {
     // Your WebViewClient
     private class MyWebViewClient extends WebViewClient {
         // Implement any WebViewClient methods as needed
+    }
+
+    // Handle permission request result
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, you can now reload the WebView or handle the camera access in the website
+                webView.reload();
+            } else {
+                // Permission denied
+                // Handle the case where the user denies the camera access
+            }
+        }
     }
 
     @Override
